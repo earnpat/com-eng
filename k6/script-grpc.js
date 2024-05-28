@@ -7,12 +7,6 @@ export const errorRate = new Rate("errors");
 const client = new grpc.Client();
 client.load(null, "topic.proto");
 
-export const options = {
-  vus: 10,
-  // duration: "1m",
-  duration: "30s",
-};
-
 export default () => {
   const basePath = "localhost:8080";
   client.connect(basePath, {

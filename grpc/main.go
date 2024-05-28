@@ -2,6 +2,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net"
 	"os"
@@ -28,6 +29,7 @@ func (s *service) HelloTopic(ctx context.Context, req *pb.GetRequest) (*pb.Respo
 }
 
 func main() {
+	fmt.Println("api grpc")
 	c := make(chan os.Signal, 1)
 	lis, err := net.Listen("tcp", ":9001")
 	if err != nil {

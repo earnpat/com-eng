@@ -4,13 +4,6 @@ import { Rate } from "k6/metrics";
 
 export const errorRate = new Rate("errors");
 
-export const options = {
-  vus: 30,
-  // duration: "10m",
-  // duration: "1m",
-  duration: "30s",
-};
-
 const basePath = "http://localhost:3000";
 
 export default function () {
@@ -19,5 +12,4 @@ export default function () {
     response,
     { "status is OK": (r) => r.status === 200 } || errorRate.add(1)
   );
-  // sleep(1);
 }
