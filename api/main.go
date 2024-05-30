@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 func main() {
@@ -16,9 +17,9 @@ func main() {
 		timestamp := time.Now().Unix()
 		timeString := strconv.Itoa(int(timestamp))
 		fmt.Println(timeString)
-		return c.SendString(timeString)
+		return c.JSON(bson.M{"message": timeString})
 	})
 
-	app.Listen(":9000")
+	app.Listen(":9001")
 
 }
