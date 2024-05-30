@@ -6,7 +6,7 @@ export const errorRate = new Rate("errors");
 
 export const options = {
   vus: 50,
-  duration: "30m",
+  duration: "20m",
 };
 
 const client = new grpc.Client();
