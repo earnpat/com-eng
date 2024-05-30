@@ -21,17 +21,15 @@ type service struct {
 }
 
 func (s *service) HelloTopic(ctx context.Context, req *pb.GetRequest) (*pb.ResponseHello, error) {
-	log.Println("Client call: HelloTopic")
 	timestamp := time.Now().Unix()
 	timeString := strconv.Itoa(int(timestamp))
-	log.Println(timeString)
 	return &pb.ResponseHello{Message: timeString}, nil
 }
 
 func main() {
 	fmt.Println("api grpc")
 	c := make(chan os.Signal, 1)
-	lis, err := net.Listen("tcp", ":9001")
+	lis, err := net.Listen("tcp", ":9002")
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}

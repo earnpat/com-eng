@@ -4,11 +4,16 @@ import grpc from "k6/net/grpc";
 
 export const errorRate = new Rate("errors");
 
+export const options = {
+  vus: 50,
+  duration: "30m",
+};
+
 const client = new grpc.Client();
 client.load(null, "topic.proto");
 
 export default () => {
-  const basePath = "localhost:8080";
+  const basePath = "localhost:9002";
   client.connect(basePath, {
     plaintext: true,
   });
