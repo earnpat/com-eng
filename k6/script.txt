@@ -1,3 +1,1 @@
 k6 run --out web-dashboard=export=/root/Desktop/com-eng/k6/report/grpc-case16-1.html script-grpc.js
-
-glances --export csv --export-csv-file /root/Desktop/com-eng/cpu/grpc-case16-1.csv
