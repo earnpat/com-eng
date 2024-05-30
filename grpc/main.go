@@ -1,4 +1,3 @@
-// grpc-tutorial-topic-service/main.go
 package main
 
 import (
