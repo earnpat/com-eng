@@ -1,1 +1,1 @@
-k6 run --out web-dashboard=export=/root/Desktop/com-eng/k6/report/grpc-case10-1.html script-grpc.js
+k6 run --out web-dashboard=export=/root/Desktop/com-eng/k6/report/grpc-case9-1.html script-grpc.js
