@@ -16,7 +16,7 @@ func main() {
 	app.Get("/timestamp", func(c *fiber.Ctx) error {
 		timestamp := time.Now().Unix()
 		timeString := strconv.Itoa(int(timestamp))
-		fmt.Println(timeString)
+		// fmt.Println(timeString)
 		return c.JSON(bson.M{"message": timeString})
 	})
 
