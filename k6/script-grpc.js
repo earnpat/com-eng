@@ -31,7 +31,5 @@ export default () => {
     { "status is OK": (r) => r.status === grpc.StatusOK } || errorRate.add(1)
   );
 
-  console.log(JSON.stringify(response.message.message));
-
   client.close();
 };
