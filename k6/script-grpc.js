@@ -11,8 +11,8 @@ export const options = {
   vus: 100,
   // duration: "1m",
   // duration: "5m",
-  // duration: "15m",
-  duration: "20m",
+  duration: "15m",
+  // duration: "20m",
 };
 
 const client = new grpc.Client();
