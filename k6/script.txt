@@ -4,4 +4,4 @@ k6 run --out web-dashboard=export=/root/Desktop/com-eng/k6/report/grpc-case7-1.h
 
 
 
-k6 run --out web-dashboard=export=/root/Desktop/com-eng/k6/report/api-case15-1.html script-api.js
+k6 run --out web-dashboard=export=/root/Desktop/com-eng/k6/report/api-case6-3.html script-api.js
