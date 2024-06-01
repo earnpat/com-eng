@@ -5,14 +5,14 @@ import grpc from "k6/net/grpc";
 export const errorRate = new Rate("errors");
 
 export const options = {
-  vus: 10,
+  // vus: 10,
   // vus: 40,
-  // vus: 70,
-  vus: 100,
+  vus: 70,
+  // vus: 100,
   // duration: "1m",
-  // duration: "5m",
+  duration: "5m",
   // duration: "15m",
-  duration: "20m",
+  // duration: "20m",
   // duration: "30m",
 };
 
