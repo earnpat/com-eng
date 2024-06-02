@@ -5,14 +5,24 @@ import { Rate } from "k6/metrics";
 export const errorRate = new Rate("errors");
 
 export const options = {
+  ext: {
+    loadimpact: {
+      insights: {
+        disabled: [
+          "http_load_throughput_limit",
+          "health_high_loadgen_cpu_usage",
+        ],
+      },
+    },
+  },
   // vus: 10,
   // vus: 40,
   vus: 70,
   // vus: 100,
   // duration: "1m",
-  duration: "5m",
+  // duration: "5m",
   // duration: "15m",
-  // duration: "20m",
+  duration: "20m",
   // duration: "30m",
 };
 
