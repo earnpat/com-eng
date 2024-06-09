@@ -5,18 +5,18 @@ import { Rate } from "k6/metrics";
 export const errorRate = new Rate("errors");
 
 export const options = {
-  vus: 10,
+  // vus: 10,
   // vus: 40,
   // vus: 70,
-  // vus: 100,
-  duration: "1s",
+  vus: 100,
+  // duration: "1s",
   // duration: "10s",
   // duration: "30s",
-  // duration: "1m",
+  duration: "1m",
 };
 
-const roundNo = 1;
-const refKey = `${roundNo}_${options.vus}_${options.duration}`;
+const roundNo = "3";
+const refKey = `${options.vus}_${options.duration}_${roundNo}`;
 const basePath = "http://localhost:9003";
 const url = `${basePath}/rest/${refKey}`;
 // const url = `${basePath}/grpc/${refKey}`;
