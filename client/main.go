@@ -84,11 +84,12 @@ func main() {
 		millisecond := float64(timestampEnd-timestampStart) / float64(1000000)
 		logrus.Info("timestamp diff millisecond: ", millisecond)
 
-		restSvc.InsertOne(ctx, restCollection.RestSchema{
-			ID:          primitive.NewObjectID(),
-			CreatedTime: time.Now(),
-			Nanosecond:  nanosecond,
-			Millisecond: millisecond,
+		restSvc.InsertOne(ctx, helper.Schema{
+			ID:                primitive.NewObjectID(),
+			CreatedTime:       time.Now(),
+			Nanosecond:        nanosecond,
+			Millisecond:       millisecond,
+			MillisecondOneWay: millisecond / float64(2),
 		}, *options.InsertOne())
 
 		return c.Status(fiber.StatusOK).JSON(bson.M{
@@ -120,11 +121,12 @@ func main() {
 		millisecond := float64(timestampEnd-timestampStart) / float64(1000000)
 		logrus.Info("timestamp diff millisecond: ", millisecond)
 
-		grpcSvc.InsertOne(ctx, grpcCollection.GrpcSchema{
-			ID:          primitive.NewObjectID(),
-			CreatedTime: time.Now(),
-			Nanosecond:  nanosecond,
-			Millisecond: millisecond,
+		grpcSvc.InsertOne(ctx, helper.Schema{
+			ID:                primitive.NewObjectID(),
+			CreatedTime:       time.Now(),
+			Nanosecond:        nanosecond,
+			Millisecond:       millisecond,
+			MillisecondOneWay: millisecond / float64(2),
 		}, *options.InsertOne())
 
 		return c.Status(fiber.StatusOK).JSON(bson.M{

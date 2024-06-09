@@ -2,32 +2,23 @@ package grpcCollection
 
 import (
 	"client-server/helper"
-	"time"
 
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type ICollection interface {
-	helper.IMongoSchemaHelper[GrpcSchema]
+	helper.IMongoSchemaHelper[helper.Schema]
 }
 
 type collectionService struct {
-	helper.MongoSchemaHelperService[GrpcSchema]
+	helper.MongoSchemaHelperService[helper.Schema]
 	collection *mongo.Collection
 }
 
-type GrpcSchema struct {
-	ID          primitive.ObjectID `json:"id"          bson:"_id"`
-	CreatedTime time.Time          `json:"createdTime" bson:"createdTime"`
-	Nanosecond  int64              `json:"nanosecond"  bson:"nanosecond"`
-	Millisecond float64            `json:"millisecond" bson:"millisecond"`
-}
-
 func NewCollection(client mongo.Database) ICollection {
-	mgCollection := client.Collection("rest")
+	mgCollection := client.Collection("grpc")
 	return &collectionService{
-		MongoSchemaHelperService: helper.MongoSchemaHelperService[GrpcSchema]{
+		MongoSchemaHelperService: helper.MongoSchemaHelperService[helper.Schema]{
 			Collection: mgCollection,
 		},
 		collection: mgCollection,
