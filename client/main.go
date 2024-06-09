@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -44,7 +43,7 @@ func main() {
 
 	app := fiber.New()
 
-	app.Get("/rest", func(c *fiber.Ctx) error {
+	app.Get("/rest/:refKey", func(c *fiber.Ctx) error {
 		ctx := c.Context()
 		client := &http.Client{}
 		req, reqErr := http.NewRequest("GET", "http://localhost:9001", nil)
@@ -62,8 +61,6 @@ func main() {
 			return resHttpErr
 		}
 
-		logrus.Info("resHttp: ", resHttp.Body)
-
 		var resBody struct {
 			Timestamp int64 `json:"timestamp"`
 		}
@@ -74,23 +71,22 @@ func main() {
 
 		timestampStart := resBody.Timestamp
 		timestampEnd := time.Now().UnixNano()
-
-		logrus.Info("timestamp start: ", timestampStart)
-		logrus.Info("timestamp end: ", timestampEnd)
-
 		nanosecond := timestampEnd - timestampStart
-		logrus.Info("timestamp diff nanosecond: ", nanosecond)
-
 		millisecond := float64(timestampEnd-timestampStart) / float64(1000000)
-		logrus.Info("timestamp diff millisecond: ", millisecond)
 
-		restSvc.InsertOne(ctx, helper.Schema{
-			ID:                primitive.NewObjectID(),
-			CreatedTime:       time.Now(),
-			Nanosecond:        nanosecond,
-			Millisecond:       millisecond,
-			MillisecondOneWay: millisecond / float64(2),
-		}, *options.InsertOne())
+		refKey := c.Params("refKey")
+		if refKey != "start" {
+			restSvc.InsertOne(ctx, helper.Schema{
+				ID:                primitive.NewObjectID(),
+				CreatedTime:       time.Now(),
+				StartTime:         timestampStart,
+				EndTime:           timestampEnd,
+				Nanosecond:        nanosecond,
+				Millisecond:       millisecond,
+				MillisecondOneWay: millisecond / float64(2),
+				RefKey:            refKey,
+			}, *options.InsertOne())
+		}
 
 		return c.Status(fiber.StatusOK).JSON(bson.M{
 			"millisecond": millisecond,
@@ -98,7 +94,7 @@ func main() {
 		})
 	})
 
-	app.Get("/grpc", func(c *fiber.Ctx) error {
+	app.Get("/grpc/:refKey", func(c *fiber.Ctx) error {
 		ctx := c.Context()
 		timestamp := time.Now().UnixNano()
 		response, err := client.GetTopics(
@@ -111,23 +107,22 @@ func main() {
 
 		timestampStart := response.Timestamp
 		timestampEnd := time.Now().UnixNano()
-
-		logrus.Info("timestamp start: ", timestampStart)
-		logrus.Info("timestamp end: ", timestampEnd)
-
 		nanosecond := timestampEnd - timestampStart
-		logrus.Info("timestamp diff nanosecond: ", nanosecond)
-
 		millisecond := float64(timestampEnd-timestampStart) / float64(1000000)
-		logrus.Info("timestamp diff millisecond: ", millisecond)
 
-		grpcSvc.InsertOne(ctx, helper.Schema{
-			ID:                primitive.NewObjectID(),
-			CreatedTime:       time.Now(),
-			Nanosecond:        nanosecond,
-			Millisecond:       millisecond,
-			MillisecondOneWay: millisecond / float64(2),
-		}, *options.InsertOne())
+		refKey := c.Params("refKey")
+		if refKey != "start" {
+			grpcSvc.InsertOne(ctx, helper.Schema{
+				ID:                primitive.NewObjectID(),
+				CreatedTime:       time.Now(),
+				StartTime:         timestampStart,
+				EndTime:           timestampEnd,
+				Nanosecond:        nanosecond,
+				Millisecond:       millisecond,
+				MillisecondOneWay: millisecond / float64(2),
+				RefKey:            refKey,
+			}, *options.InsertOne())
+		}
 
 		return c.Status(fiber.StatusOK).JSON(bson.M{
 			"millisecond": millisecond,
