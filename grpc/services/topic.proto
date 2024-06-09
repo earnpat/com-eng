@@ -4,27 +4,13 @@ package topic;
 option go_package = "services/pb";
 
 service TopicService {
-  rpc CreateTopic(Topic) returns (Response);
   rpc GetTopics(GetRequest) returns (Response);
-  rpc HelloTopic(GetRequest) returns (ResponseHello);
 }
 
-message Topic {
-  string id = 1;
-  string title = 2;
-  string description = 3;
-  int32 price = 4;
-  string category_id = 5;
+message GetRequest {
+  int64 timestamp = 1;
 }
-
-message GetRequest {}
 
 message Response {
-  bool created = 1;
-  Topic topic = 2;
-  repeated Topic topics = 3;
-}
-
-message ResponseHello {
-  string message = 1;
+  int64 timestamp = 1;
 }
