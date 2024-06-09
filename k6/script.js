@@ -17,11 +17,12 @@ export const options = {
 
 const roundNo = 1;
 const refKey = `${roundNo}_${options.vus}_${options.duration}`;
-const basePath = `http://localhost:9003/rest/${refKey}`;
-// const basePath = `http://localhost:9003/grpc/${refKey}`;
+const basePath = "http://localhost:9003";
+const url = `${basePath}/rest/${refKey}`;
+// const url = `${basePath}/grpc/${refKey}`;
 
 export default function () {
-  const response = http.get(basePath);
+  const response = http.get(url);
   check(
     response,
     { "status is OK": (r) => r.status === 200 } || errorRate.add(1)
