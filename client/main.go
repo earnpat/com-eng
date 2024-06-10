@@ -24,14 +24,14 @@ import (
 func main() {
 	fmt.Println("client start")
 
-	dbmg, dbmgCtx := helper.MongoConnection("mongodb://localhost:27018/")
+	dbmg, dbmgCtx := helper.MongoConnection("mongodb://localhost:27017/")
 	mongoDB := *dbmg.Database("com-eng")
 
 	restSvc := restCollection.NewCollection(mongoDB)
 	grpcSvc := grpcCollection.NewCollection(mongoDB)
 
 	conn, err := grpc.NewClient(
-		"localhost:9002",
+		"178.128.88.107:9002",
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {
@@ -46,7 +46,7 @@ func main() {
 	app.Get("/rest/:refKey", func(c *fiber.Ctx) error {
 		ctx := c.Context()
 		client := &http.Client{}
-		req, reqErr := http.NewRequest("GET", "http://localhost:9001", nil)
+		req, reqErr := http.NewRequest("GET", "http://178.128.88.107:9001", nil)
 		if reqErr != nil {
 			return reqErr
 		}
