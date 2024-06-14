@@ -15,11 +15,11 @@ export const options = {
   duration: "1m",
 };
 
-const roundNo = "3";
+const roundNo = "048";
 const refKey = `${options.vus}_${options.duration}_${roundNo}`;
 const basePath = "http://localhost:9003";
-const url = `${basePath}/rest/${refKey}`;
-// const url = `${basePath}/grpc/${refKey}`;
+// const url = `${basePath}/rest/${refKey}`;
+const url = `${basePath}/grpc/${refKey}`;
 
 export default function () {
   const response = http.get(url);
