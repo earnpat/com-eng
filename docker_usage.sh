@@ -1,9 +1,11 @@
 #!/bin/bash
 
-CONTAINER_ID=2812586a21b2
+CONTAINER_ID=24c712b238af
 DURATION=3600 # ระยะเวลาในการเก็บข้อมูล (s)
 INTERVAL=1 # ช่วงเวลาในการเก็บข้อมูล (s)
-OUTPUT_FILE="usage-rest.csv"
+# OUTPUT_FILE="usage-rest.csv"
+# OUTPUT_FILE="usage-grpc.csv"
+OUTPUT_FILE="usage-grpc-2.csv"
 
 total_cpu=0
 total_memory=0

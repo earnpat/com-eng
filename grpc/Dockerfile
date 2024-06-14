@@ -5,9 +5,10 @@ WORKDIR /src
 COPY go.mod go.sum ./
 RUN go mod download
 
-COPY *.go ./
+# COPY *.go ./
+COPY . ./
 
 RUN CGO_ENABLED=0 GOOS=linux go build -o /grpc-api
 
-EXPOSE 9001
+EXPOSE 9002
 CMD ["/grpc-api"]
