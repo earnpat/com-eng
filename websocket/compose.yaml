@@ -4,4 +4,4 @@ services:
       context: .
       target: final
     ports:
-      - 9002:9002
+      - 9003:9003
