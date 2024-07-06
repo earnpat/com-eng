@@ -4,15 +4,18 @@ import (
 	"client-server/helper"
 	grpcCollection "client-server/repository/grpc"
 	restCollection "client-server/repository/rest"
+	websocketCollection "client-server/repository/websocket"
 	pb "client-server/services"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"strconv"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gorilla/websocket"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -24,11 +27,13 @@ import (
 func main() {
 	fmt.Println("client start")
 
-	dbmg, dbmgCtx := helper.MongoConnection("mongodb://localhost:27017/")
+	dbmg, dbmgCtx := helper.MongoConnection("mongodb://localhost:27017/") // cloud
+	// dbmg, dbmgCtx := helper.MongoConnection("mongodb://localhost:27018/") // local
 	mongoDB := *dbmg.Database("com-eng")
 
 	restSvc := restCollection.NewCollection(mongoDB)
 	grpcSvc := grpcCollection.NewCollection(mongoDB)
+	websocketSvc := websocketCollection.NewCollection(mongoDB)
 
 	conn, err := grpc.NewClient(
 		"178.128.88.107:9002",
@@ -130,7 +135,58 @@ func main() {
 		})
 	})
 
-	app.Listen(":9003")
+	app.Get("/websocket/:refKey", func(c *fiber.Ctx) error {
+		ctx := c.Context()
+		u := url.URL{Scheme: "ws", Host: "localhost:9003", Path: "/ws/test"}
+		log.Printf("connecting to %s", u.String())
+
+		conn, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
+		if err != nil {
+			log.Fatal("dial:", err)
+			return c.Status(fiber.StatusInternalServerError).SendString("Failed to connect to WebSocket")
+		}
+		defer conn.Close()
+
+		timestamp := time.Now().UnixNano()
+		err = conn.WriteMessage(websocket.TextMessage, []byte(strconv.Itoa(int(timestamp))))
+		if err != nil {
+			log.Println("write:", err)
+			return c.Status(fiber.StatusInternalServerError).SendString("Failed to send message to WebSocket")
+		}
+
+		_, message, err := conn.ReadMessage()
+		if err != nil {
+			log.Println("read:", err)
+			return c.Status(fiber.StatusInternalServerError).SendString("Failed to read message from WebSocket")
+		}
+
+		messageStr := string(message[:])
+		timestampStart, _ := strconv.ParseInt(messageStr, 10, 64)
+		timestampEnd := time.Now().UnixNano()
+		nanosecond := timestampEnd - timestampStart
+		millisecond := float64(timestampEnd-timestampStart) / float64(1000000)
+
+		refKey := c.Params("refKey")
+		if refKey != "start" {
+			websocketSvc.InsertOne(ctx, helper.Schema{
+				ID:                primitive.NewObjectID(),
+				CreatedTime:       time.Now(),
+				StartTime:         timestampStart,
+				EndTime:           timestampEnd,
+				Nanosecond:        nanosecond,
+				Millisecond:       millisecond,
+				MillisecondOneWay: millisecond / float64(2),
+				RefKey:            refKey,
+			}, *options.InsertOne())
+		}
+
+		return c.Status(fiber.StatusOK).JSON(bson.M{
+			"millisecond": millisecond,
+			"nanosecond":  nanosecond,
+		})
+	})
+
+	app.Listen(":9000")
 
 	defer func() {
 		if err := dbmg.Disconnect(dbmgCtx); err != nil {
