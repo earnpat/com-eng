@@ -16,7 +16,7 @@ export const options = {
 
 const roundNo = "048";
 const refKey = `${roundNo}_${options.vus}_${options.duration}`;
-const basePath = "http://localhost:9003";
+const basePath = "http://localhost:9000";
 // const url = `${basePath}/rest/${refKey}`;
 // const url = `${basePath}/grpc/${refKey}`;
 const url = `${basePath}/websocket/${refKey}`;

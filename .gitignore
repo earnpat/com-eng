@@ -1,4 +1,8 @@
 /com-eng-rest-query.csv
 /com-eng-rest-full-collection.csv
+
 /com-eng-grpc-query.csv
 /com-eng-grpc-full-collection.csv
+
+/com-eng-grpc-query.csv
+/com-eng-websocket-full-collection.csv

@@ -137,8 +137,7 @@ func main() {
 
 	app.Get("/websocket/:refKey", func(c *fiber.Ctx) error {
 		ctx := c.Context()
-		u := url.URL{Scheme: "ws", Host: "localhost:9003", Path: "/ws/test"}
-		log.Printf("connecting to %s", u.String())
+		u := url.URL{Scheme: "ws", Host: "178.128.88.107:9003", Path: "/ws/test"}
 
 		conn, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
 		if err != nil {
