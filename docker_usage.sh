@@ -1,10 +1,11 @@
 #!/bin/bash
 
-CONTAINER_ID=24c712b238af
+CONTAINER_ID=1bb5cadf1adc
 DURATION=3600 # ระยะเวลาในการเก็บข้อมูล (s)
 INTERVAL=1 # ช่วงเวลาในการเก็บข้อมูล (s)
 # OUTPUT_FILE="usage-rest.csv"
-OUTPUT_FILE="usage-grpc.csv"
+# OUTPUT_FILE="usage-grpc.csv"
+OUTPUT_FILE="usage-websocket.csv"
 
 total_cpu=0
 total_memory=0
