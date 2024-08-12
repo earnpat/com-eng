@@ -36,7 +36,8 @@ func main() {
 	websocketSvc := websocketCollection.NewCollection(mongoDB)
 
 	conn, err := grpc.NewClient(
-		"178.128.88.107:9002",
+		// "178.128.88.107:9002",
+		"localhost:9002",
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {
@@ -51,7 +52,8 @@ func main() {
 	app.Get("/rest/:refKey", func(c *fiber.Ctx) error {
 		ctx := c.Context()
 		client := &http.Client{}
-		req, reqErr := http.NewRequest("GET", "http://178.128.88.107:9001", nil)
+		// req, reqErr := http.NewRequest("GET", "http://178.128.88.107:9001", nil)
+		req, reqErr := http.NewRequest("GET", "http://localhost:9001", nil)
 		if reqErr != nil {
 			return reqErr
 		}
@@ -137,7 +139,8 @@ func main() {
 
 	app.Get("/websocket/:refKey", func(c *fiber.Ctx) error {
 		ctx := c.Context()
-		u := url.URL{Scheme: "ws", Host: "178.128.88.107:9003", Path: "/ws/test"}
+		// u := url.URL{Scheme: "ws", Host: "178.128.88.107:9003", Path: "/ws/test"}
+		u := url.URL{Scheme: "ws", Host: "localhost:9003", Path: "/ws/test"}
 
 		conn, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
 		if err != nil {

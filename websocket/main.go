@@ -13,13 +13,15 @@ func main() {
 	app := fiber.New()
 
 	app.Get("/ws/test", websocket.New(func(c *websocket.Conn) {
-		_, msg, err := c.ReadMessage()
-		if err != nil {
-			log.Println("read:", err)
-		}
+		for {
+			_, msg, err := c.ReadMessage()
+			if err != nil {
+				log.Println("read:", err)
+			}
 
-		if err = c.WriteMessage(websocket.TextMessage, msg); err != nil {
-			log.Println("write:", err)
+			if err = c.WriteMessage(websocket.TextMessage, msg); err != nil {
+				log.Println("write:", err)
+			}
 		}
 	}))
 
