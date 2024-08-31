@@ -84,14 +84,14 @@ func main() {
 		refKey := c.Params("refKey")
 		if refKey != "start" {
 			restSvc.InsertOne(ctx, helper.Schema{
-				ID:                primitive.NewObjectID(),
-				CreatedTime:       time.Now(),
-				StartTime:         timestampStart,
-				EndTime:           timestampEnd,
-				Nanosecond:        nanosecond,
-				Millisecond:       millisecond,
-				MillisecondOneWay: millisecond / float64(2),
-				RefKey:            refKey,
+				ID:             primitive.NewObjectID(),
+				CreatedTime:    time.Now(),
+				StartTime:      timestampStart,
+				EndTime:        timestampEnd,
+				Nanosecond:     nanosecond,
+				MilliSec:       millisecond,
+				MilliSecOneWay: millisecond / float64(2),
+				RefKey:         refKey,
 			}, *options.InsertOne())
 		}
 
@@ -120,14 +120,14 @@ func main() {
 		refKey := c.Params("refKey")
 		if refKey != "start" {
 			grpcSvc.InsertOne(ctx, helper.Schema{
-				ID:                primitive.NewObjectID(),
-				CreatedTime:       time.Now(),
-				StartTime:         timestampStart,
-				EndTime:           timestampEnd,
-				Nanosecond:        nanosecond,
-				Millisecond:       millisecond,
-				MillisecondOneWay: millisecond / float64(2),
-				RefKey:            refKey,
+				ID:             primitive.NewObjectID(),
+				CreatedTime:    time.Now(),
+				StartTime:      timestampStart,
+				EndTime:        timestampEnd,
+				Nanosecond:     nanosecond,
+				MilliSec:       millisecond,
+				MilliSecOneWay: millisecond / float64(2),
+				RefKey:         refKey,
 			}, *options.InsertOne())
 		}
 
@@ -171,14 +171,14 @@ func main() {
 		refKey := c.Params("refKey")
 		if refKey != "start" {
 			websocketSvc.InsertOne(ctx, helper.Schema{
-				ID:                primitive.NewObjectID(),
-				CreatedTime:       time.Now(),
-				StartTime:         timestampStart,
-				EndTime:           timestampEnd,
-				Nanosecond:        nanosecond,
-				Millisecond:       millisecond,
-				MillisecondOneWay: millisecond / float64(2),
-				RefKey:            refKey,
+				ID:             primitive.NewObjectID(),
+				CreatedTime:    time.Now(),
+				StartTime:      timestampStart,
+				EndTime:        timestampEnd,
+				Nanosecond:     nanosecond,
+				MilliSec:       millisecond,
+				MilliSecOneWay: millisecond / float64(2),
+				RefKey:         refKey,
 			}, *options.InsertOne())
 		}
 

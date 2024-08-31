@@ -12,6 +12,14 @@ func main() {
 	fmt.Println("websocket start")
 	app := fiber.New()
 
+	app.Use("/ws", func(c *fiber.Ctx) error {
+		if websocket.IsWebSocketUpgrade(c) {
+			c.Locals("allowed", true)
+			return c.Next()
+		}
+		return fiber.ErrUpgradeRequired
+	})
+
 	app.Get("/ws/test", websocket.New(func(c *websocket.Conn) {
 		for {
 			_, msg, err := c.ReadMessage()
