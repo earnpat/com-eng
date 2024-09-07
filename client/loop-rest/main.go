@@ -13,6 +13,13 @@ type ResBody struct {
 	Timestamp int64 `json:"timestamp"`
 }
 
+type TodoData struct {
+	Id        int64  `json:"id"`
+	Todo      string `json:"todo"`
+	Completed bool   `json:"completed"`
+	UserId    int64  `json:"userId"`
+}
+
 func main() {
 	// ctx := context.Background()
 
@@ -28,7 +35,7 @@ func main() {
 		return
 	}
 
-	loopTimeSecs := []int{300}
+	loopTimeSecs := []int{3}
 	// loopTimeSecs := helper.GetLoopTime()
 	for _, loopTimeSec := range loopTimeSecs {
 		startTime := time.Now()
@@ -41,6 +48,7 @@ func main() {
 		// minTimeNanoSec := float64(1000000)
 		// maxTimeNanoSec := float64(0)
 
+		logrus.Info("loopTimeSec: ", loopTimeSec)
 		logrus.Info("start")
 		for time.Now().Before(endTime) {
 			count++
@@ -56,7 +64,8 @@ func main() {
 			defer res.Body.Close()
 
 			var resBody struct {
-				Timestamp int64 `json:"timestamp"`
+				Timestamp int64      `json:"timestamp"`
+				Todo      []TodoData `json:"todo"`
 			}
 			resBodyErr := json.NewDecoder(res.Body).Decode(&resBody)
 			if resBodyErr != nil {
@@ -64,6 +73,7 @@ func main() {
 			}
 
 			timestampStart := resBody.Timestamp
+			// timestampStart := int64(0)
 			timestampEnd := time.Now().UnixNano()
 			nanosecond := timestampEnd - timestampStart
 
