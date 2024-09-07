@@ -11,10 +11,6 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-type ResBody struct {
-	Timestamp int64 `json:"timestamp"`
-}
-
 func main() {
 	ctx := context.Background()
 
@@ -42,7 +38,7 @@ func main() {
 		return
 	}
 
-	loopTimeSecs := []int{300}
+	loopTimeSecs := []int{3}
 	// loopTimeSecs := helper.GetLoopTime()
 	for _, loopTimeSec := range loopTimeSecs {
 		startTime := time.Now()
@@ -55,6 +51,7 @@ func main() {
 		minTimeNanoSec := float64(1000000)
 		maxTimeNanoSec := float64(0)
 
+		logrus.Info("loopTimeSec: ", loopTimeSec)
 		logrus.Info("start")
 		for time.Now().Before(endTime) {
 			count++
