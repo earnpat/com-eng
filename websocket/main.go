@@ -22,12 +22,12 @@ func main() {
 
 	app.Get("/ws/test", websocket.New(func(c *websocket.Conn) {
 		for {
-			_, msg, err := c.ReadMessage()
+			_, _, err := c.ReadMessage()
 			if err != nil {
 				log.Println("read:", err)
 			}
 
-			if err = c.WriteMessage(websocket.TextMessage, msg); err != nil {
+			if err = c.WriteMessage(websocket.TextMessage, nil); err != nil {
 				log.Println("write:", err)
 			}
 		}

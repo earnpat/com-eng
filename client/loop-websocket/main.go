@@ -43,6 +43,7 @@ func main() {
 	count := 0
 	countSuccess := 0
 	countFail := 0
+	totalRequestTime := int64(0)
 
 	// timestamp := time.Now().UnixNano()
 
@@ -50,8 +51,9 @@ func main() {
 	for time.Now().Before(endTime) {
 		count++
 
-		timestamp := time.Now().UnixNano()
-		err = conn.WriteMessage(websocket.TextMessage, []byte(strconv.Itoa(int(timestamp))))
+		timestamp := time.Now()
+		// err = conn.WriteMessage(websocket.TextMessage, []byte(strconv.Itoa(int(timestamp))))
+		err = conn.WriteMessage(websocket.TextMessage, nil)
 		if err != nil {
 			countFail++
 			continue
@@ -65,6 +67,7 @@ func main() {
 			// log.Println("read:", err)
 			// log.Fatalf("Did not read: %v", err)
 		}
+		requestDuration := time.Since(timestamp).Nanoseconds()
 
 		// messageStr := string(message[:])
 		// timestampStart, _ := strconv.ParseInt(messageStr, 10, 64)
@@ -74,6 +77,7 @@ func main() {
 
 		// logrus.Info("nanosecond: ", nanosecond)
 		// logrus.Info("millisecond: ", millisecond)
+		totalRequestTime += requestDuration
 		countSuccess++
 	}
 
@@ -81,4 +85,8 @@ func main() {
 	logrus.Info("count: ", count)
 	logrus.Info("countSuccess: ", countSuccess)
 	logrus.Info("countFail: ", countFail)
+
+	avgRequestTimeNanoSec := totalRequestTime / int64(count)
+	millisecond := float64(avgRequestTimeNanoSec) / float64(1000000)
+	logrus.Info("millisecond: ", millisecond)
 }

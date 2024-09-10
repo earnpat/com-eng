@@ -19,6 +19,5 @@ message TodoResponse {
 }
 
 message Response {
-  int64 timestamp = 1;
-  repeated TodoResponse todo = 2;
+  bool ok = 1;
 }

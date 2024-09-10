@@ -1,12 +1,15 @@
 package main
 
 import (
-	"encoding/json"
+	"client-server/helper"
+	logsCollection "client-server/repository/v3-logs"
+	"context"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type ResBody struct {
@@ -21,22 +24,24 @@ type TodoData struct {
 }
 
 func main() {
-	// ctx := context.Background()
+	ctx := context.Background()
 
-	// // dbmg, dbmgCtx := helper.MongoConnection("mongodb://localhost:27017/") // cloud
-	// dbmg, dbmgCtx := helper.MongoConnection("mongodb://localhost:27018/") // local
-	// mongoDB := *dbmg.Database("com-eng-v3")
+	// dbmg, dbmgCtx := helper.MongoConnection("mongodb://localhost:27017/") // cloud
+	dbmg, dbmgCtx := helper.MongoConnection("mongodb://localhost:27018/") // local
+	mongoDB := *dbmg.Database("com-eng-v3")
 
-	// logsSvc := logsCollection.NewCollection(mongoDB)
+	logsSvc := logsCollection.NewCollection(mongoDB)
+
+	url := "https://159.223.36.152:9001"
 
 	// check connection
-	_, resErr := http.Get("http://localhost:9001?timestamp=" + strconv.Itoa(int(0)))
+	_, resErr := http.Get(url)
 	if resErr != nil {
 		return
 	}
 
-	loopTimeSecs := []int{3}
-	// loopTimeSecs := helper.GetLoopTime()
+	// loopTimeSecs := []int{3}
+	loopTimeSecs := helper.GetLoopTime()
 	for _, loopTimeSec := range loopTimeSecs {
 		startTime := time.Now()
 		endTime := startTime.Add(time.Duration(loopTimeSec) * time.Second)
@@ -45,47 +50,50 @@ func main() {
 		countSuccess := 0
 		countFail := 0
 		totalRequestTime := int64(0)
-		// minTimeNanoSec := float64(1000000)
-		// maxTimeNanoSec := float64(0)
+		minTimeNanoSec := float64(1000000000)
+		maxTimeNanoSec := float64(0)
 
 		logrus.Info("loopTimeSec: ", loopTimeSec)
 		logrus.Info("start")
 		for time.Now().Before(endTime) {
 			count++
 
-			timestamp := time.Now().UnixNano()
-			res, resErr := http.Get("http://localhost:9001?timestamp=" + strconv.Itoa(int(timestamp)))
-			// _, resErr := http.Get("http://localhost:9001?timestamp=" + strconv.Itoa(int(timestamp)))
+			timestamp := time.Now()
+			// res, resErr := http.Get(url)
+			_, resErr := http.Get(url)
 			if resErr != nil {
+				logrus.Info("resErr: ", resErr)
 				countFail++
 				continue
 			}
+			requestDuration := time.Since(timestamp).Nanoseconds()
 
-			defer res.Body.Close()
+			// defer res.Body.Close()
 
-			var resBody struct {
-				Timestamp int64      `json:"timestamp"`
-				Todo      []TodoData `json:"todo"`
-			}
-			resBodyErr := json.NewDecoder(res.Body).Decode(&resBody)
-			if resBodyErr != nil {
-				countFail++
-			}
-
-			timestampStart := resBody.Timestamp
-			// timestampStart := int64(0)
-			timestampEnd := time.Now().UnixNano()
-			nanosecond := timestampEnd - timestampStart
-
-			// if float64(nanosecond) > (maxTimeNanoSec) {
-			// 	maxTimeNanoSec = float64(nanosecond)
+			// var resBody struct {
+			// 	Timestamp int64      `json:"timestamp"`
+			// 	Todo      []TodoData `json:"todo"`
+			// }
+			// resBodyErr := json.NewDecoder(res.Body).Decode(&resBody)
+			// if resBodyErr != nil {
+			// 	countFail++
 			// }
 
-			// if float64(nanosecond) < minTimeNanoSec {
-			// 	minTimeNanoSec = float64(nanosecond)
-			// }
+			// timestampStart := resBody.Timestamp
+			// // timestampStart := int64(0)
+			// timestampEnd := time.Now().UnixNano()
+			// nanosecond := timestampEnd - timestampStart
 
-			totalRequestTime += nanosecond
+			if float64(requestDuration) > (maxTimeNanoSec) {
+				maxTimeNanoSec = float64(requestDuration)
+			}
+
+			if float64(requestDuration) < minTimeNanoSec {
+				minTimeNanoSec = float64(requestDuration)
+			}
+
+			// totalRequestTime += nanosecond
+			totalRequestTime += requestDuration
 			countSuccess++
 		}
 
@@ -98,27 +106,27 @@ func main() {
 		millisecond := float64(avgRequestTimeNanoSec) / float64(1000000)
 		logrus.Info("millisecond: ", millisecond)
 
-		// logsSvc.InsertOne(ctx, logsCollection.LogsSchema{
-		// 	ID:                    primitive.NewObjectID(),
-		// 	CreatedTime:           time.Now(),
-		// 	Type:                  logsCollection.REST,
-		// 	LoopTimeSec:           int64(loopTimeSec),
-		// 	Count:                 int64(count),
-		// 	CountSuccess:          int64(countSuccess),
-		// 	CountFail:             int64(countFail),
-		// 	MinTimeNanoSec:        minTimeNanoSec,
-		// 	MaxTimeNanoSec:        maxTimeNanoSec,
-		// 	AvgRequestTimeNanoSec: avgRequestTimeNanoSec,
-		// 	AvgMilliSec:           millisecond,
-		// 	AvgMilliSecOneWay:     millisecond / float64(2),
-		// }, *options.InsertOne())
+		logsSvc.InsertOne(ctx, logsCollection.LogsSchema{
+			ID:                    primitive.NewObjectID(),
+			CreatedTime:           time.Now(),
+			Type:                  logsCollection.REST,
+			LoopTimeSec:           int64(loopTimeSec),
+			Count:                 int64(count),
+			CountSuccess:          int64(countSuccess),
+			CountFail:             int64(countFail),
+			MinTimeNanoSec:        minTimeNanoSec,
+			MaxTimeNanoSec:        maxTimeNanoSec,
+			AvgRequestTimeNanoSec: avgRequestTimeNanoSec,
+			AvgMilliSec:           millisecond,
+			AvgMilliSecOneWay:     millisecond / float64(2),
+		}, *options.InsertOne())
 
-		// time.Sleep(10 * time.Second)
+		time.Sleep(10 * time.Second)
 	}
 
-	// defer func() {
-	// 	if err := dbmg.Disconnect(dbmgCtx); err != nil {
-	// 		panic(err)
-	// 	}
-	// }()
+	defer func() {
+		if err := dbmg.Disconnect(dbmgCtx); err != nil {
+			panic(err)
+		}
+	}()
 }

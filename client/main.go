@@ -2,10 +2,8 @@ package main
 
 import (
 	"client-server/helper"
-	grpcCollection "client-server/repository/grpc"
 	restCollection "client-server/repository/rest"
 	websocketCollection "client-server/repository/websocket"
-	pb "client-server/services"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -19,7 +17,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -32,7 +29,7 @@ func main() {
 	mongoDB := *dbmg.Database("com-eng")
 
 	restSvc := restCollection.NewCollection(mongoDB)
-	grpcSvc := grpcCollection.NewCollection(mongoDB)
+	// grpcSvc := grpcCollection.NewCollection(mongoDB)
 	websocketSvc := websocketCollection.NewCollection(mongoDB)
 
 	conn, err := grpc.NewClient(
@@ -45,7 +42,7 @@ func main() {
 	}
 
 	defer conn.Close()
-	client := pb.NewTopicServiceClient(conn)
+	// client := pb.NewTopicServiceClient(conn)
 
 	app := fiber.New()
 
@@ -101,41 +98,41 @@ func main() {
 		})
 	})
 
-	app.Get("/grpc/:refKey", func(c *fiber.Ctx) error {
-		ctx := c.Context()
-		timestamp := time.Now().UnixNano()
-		response, err := client.GetTopics(
-			context.Background(),
-			&pb.GetRequest{Timestamp: timestamp},
-		)
-		if err != nil {
-			log.Fatalf("Could not list topics: %v", err)
-		}
+	// app.Get("/grpc/:refKey", func(c *fiber.Ctx) error {
+	// 	ctx := c.Context()
+	// 	timestamp := time.Now().UnixNano()
+	// 	response, err := client.GetTopics(
+	// 		context.Background(),
+	// 		&pb.GetRequest{Timestamp: timestamp},
+	// 	)
+	// 	if err != nil {
+	// 		log.Fatalf("Could not list topics: %v", err)
+	// 	}
 
-		timestampStart := response.Timestamp
-		timestampEnd := time.Now().UnixNano()
-		nanosecond := timestampEnd - timestampStart
-		millisecond := float64(timestampEnd-timestampStart) / float64(1000000)
+	// 	timestampStart := response.Timestamp
+	// 	timestampEnd := time.Now().UnixNano()
+	// 	nanosecond := timestampEnd - timestampStart
+	// 	millisecond := float64(timestampEnd-timestampStart) / float64(1000000)
 
-		refKey := c.Params("refKey")
-		if refKey != "start" {
-			grpcSvc.InsertOne(ctx, helper.Schema{
-				ID:             primitive.NewObjectID(),
-				CreatedTime:    time.Now(),
-				StartTime:      timestampStart,
-				EndTime:        timestampEnd,
-				Nanosecond:     nanosecond,
-				MilliSec:       millisecond,
-				MilliSecOneWay: millisecond / float64(2),
-				RefKey:         refKey,
-			}, *options.InsertOne())
-		}
+	// 	refKey := c.Params("refKey")
+	// 	if refKey != "start" {
+	// 		grpcSvc.InsertOne(ctx, helper.Schema{
+	// 			ID:             primitive.NewObjectID(),
+	// 			CreatedTime:    time.Now(),
+	// 			StartTime:      timestampStart,
+	// 			EndTime:        timestampEnd,
+	// 			Nanosecond:     nanosecond,
+	// 			MilliSec:       millisecond,
+	// 			MilliSecOneWay: millisecond / float64(2),
+	// 			RefKey:         refKey,
+	// 		}, *options.InsertOne())
+	// 	}
 
-		return c.Status(fiber.StatusOK).JSON(bson.M{
-			"millisecond": millisecond,
-			"nanosecond":  nanosecond,
-		})
-	})
+	// 	return c.Status(fiber.StatusOK).JSON(bson.M{
+	// 		"millisecond": millisecond,
+	// 		"nanosecond":  nanosecond,
+	// 	})
+	// })
 
 	app.Get("/websocket/:refKey", func(c *fiber.Ctx) error {
 		ctx := c.Context()
