@@ -7,17 +7,22 @@ import (
 )
 
 type LogsTypeEnum string
+type LogsConnectionEnum string
 
 const (
 	REST LogsTypeEnum = "REST"
 	GRPC LogsTypeEnum = "GRPC"
 	WS   LogsTypeEnum = "WS"
+
+	LOCAL  LogsConnectionEnum = "LOCAL"
+	DOCKER LogsConnectionEnum = "DOCKER"
 )
 
 type LogsSchema struct {
 	ID                    primitive.ObjectID `json:"id"                    bson:"_id"`
 	CreatedTime           time.Time          `json:"createdTime"           bson:"createdTime"`
 	Type                  LogsTypeEnum       `json:"type"                  bson:"type"`
+	Connection            LogsConnectionEnum `json:"connection"            bson:"connection"`
 	LoopTimeSec           int64              `json:"loopTimeSec"           bson:"loopTimeSec"`
 	Count                 int64              `json:"count"                 bson:"count"`
 	CountSuccess          int64              `json:"countSuccess"          bson:"countSuccess"`

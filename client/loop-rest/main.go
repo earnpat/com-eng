@@ -66,7 +66,6 @@ func main() {
 		count++
 
 		timestamp := time.Now()
-		// res, resErr := http.Get(url)
 		_, resErr := http.Get(url)
 		if resErr != nil {
 			logrus.Info("resErr: ", resErr)
@@ -74,22 +73,6 @@ func main() {
 			continue
 		}
 		requestDuration := time.Since(timestamp).Nanoseconds()
-
-		// defer res.Body.Close()
-
-		// var resBody struct {
-		// 	Timestamp int64      `json:"timestamp"`
-		// 	Todo      []TodoData `json:"todo"`
-		// }
-		// resBodyErr := json.NewDecoder(res.Body).Decode(&resBody)
-		// if resBodyErr != nil {
-		// 	countFail++
-		// }
-
-		// timestampStart := resBody.Timestamp
-		// // timestampStart := int64(0)
-		// timestampEnd := time.Now().UnixNano()
-		// nanosecond := timestampEnd - timestampStart
 
 		if float64(requestDuration) > (maxTimeNanoSec) {
 			maxTimeNanoSec = float64(requestDuration)
@@ -99,7 +82,6 @@ func main() {
 			minTimeNanoSec = float64(requestDuration)
 		}
 
-		// totalRequestTime += nanosecond
 		totalRequestTime += requestDuration
 		countSuccess++
 	}
@@ -117,6 +99,7 @@ func main() {
 		ID:                    primitive.NewObjectID(),
 		CreatedTime:           time.Now(),
 		Type:                  logsCollection.REST,
+		Connection:            logsCollection.LOCAL,
 		LoopTimeSec:           int64(loopTimeSec),
 		Count:                 int64(count),
 		CountSuccess:          int64(countSuccess),

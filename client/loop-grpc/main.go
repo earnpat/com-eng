@@ -97,6 +97,7 @@ func main() {
 		ID:                    primitive.NewObjectID(),
 		CreatedTime:           time.Now(),
 		Type:                  logsCollection.GRPC,
+		Connection:            logsCollection.LOCAL,
 		LoopTimeSec:           int64(loopTimeSec),
 		Count:                 int64(count),
 		CountSuccess:          int64(countSuccess),
