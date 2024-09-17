@@ -6,8 +6,10 @@ import (
 	pb "client-server/services"
 	"context"
 	"log"
+	"os"
 	"time"
 
+	"github.com/joho/godotenv"
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -16,19 +18,21 @@ import (
 )
 
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatalf("err loading: %v", err)
+	}
+
 	ctx := context.Background()
 
-	// dbmg, dbmgCtx := helper.MongoConnection("mongodb://localhost:27017/") // cloud
-	dbmg, dbmgCtx := helper.MongoConnection("mongodb://localhost:27018/") // local
+	dbmg, dbmgCtx := helper.MongoConnection(os.Getenv("MONGO_URL"))
 	mongoDB := *dbmg.Database("com-eng-v3")
 
 	logsSvc := logsCollection.NewCollection(mongoDB)
 
-	conn, err := grpc.NewClient(
-		// "localhost:9002",
-		"159.223.36.152:9002",
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-	)
+	url := os.Getenv("BASE_IP") + ":9002"
+
+	conn, err := grpc.NewClient(url, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("Did not connect: %v", err)
 	}
@@ -60,16 +64,11 @@ func main() {
 		count++
 
 		timestamp := time.Now()
-		// res, resErr := client.GetTopics(ctx, &pb.GetRequest{})
 		_, resErr := client.GetTopics(ctx, &pb.GetRequest{})
 		if resErr != nil {
 			countFail++
 		}
 		requestDuration := time.Since(timestamp).Nanoseconds()
-
-		// timestampStart := res.Timestamp
-		// timestampEnd := time.Now().UnixNano()
-		// nanosecond := timestampEnd - timestampStart
 
 		if float64(requestDuration) > (maxTimeNanoSec) {
 			maxTimeNanoSec = float64(requestDuration)
@@ -79,7 +78,6 @@ func main() {
 			minTimeNanoSec = float64(requestDuration)
 		}
 
-		// totalRequestTime += nanosecond
 		totalRequestTime += requestDuration
 		countSuccess++
 	}

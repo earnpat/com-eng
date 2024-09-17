@@ -34,7 +34,7 @@ func main() {
 
 	ctx := context.Background()
 
-	dbmg, dbmgCtx := helper.MongoConnection(os.Getenv("MONGO_URL")) // local
+	dbmg, dbmgCtx := helper.MongoConnection(os.Getenv("MONGO_URL"))
 	mongoDB := *dbmg.Database("com-eng-v3")
 
 	logsSvc := logsCollection.NewCollection(mongoDB)
