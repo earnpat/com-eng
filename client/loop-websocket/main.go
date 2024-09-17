@@ -93,7 +93,7 @@ func main() {
 		countSuccess++
 	}
 
-	logrus.Info("end of rest service")
+	logrus.Info("end of websocket service")
 	logrus.Info("count: ", count)
 	logrus.Info("countSuccess: ", countSuccess)
 	logrus.Info("countFail: ", countFail)
