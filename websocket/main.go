@@ -24,7 +24,10 @@ func main() {
 		for {
 			_, _, err := c.ReadMessage()
 			if err != nil {
-				log.Println("read:", err)
+				if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+					log.Println("read:", err)
+				}
+				break
 			}
 
 			if err = c.WriteMessage(websocket.TextMessage, nil); err != nil {
