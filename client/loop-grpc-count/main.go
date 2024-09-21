@@ -3,9 +3,9 @@ package main
 import (
 	"client-server/helper"
 	logsCollection "client-server/repository/v3-logs"
+	pb "client-server/services"
 	"context"
 	"log"
-	"net/http"
 	"os"
 	"time"
 
@@ -13,18 +13,9 @@ import (
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
-
-type ResBody struct {
-	Timestamp int64 `json:"timestamp"`
-}
-
-type TodoData struct {
-	Id        int64  `json:"id"`
-	Todo      string `json:"todo"`
-	Completed bool   `json:"completed"`
-	UserId    int64  `json:"userId"`
-}
 
 func main() {
 	err := godotenv.Load()
@@ -39,38 +30,42 @@ func main() {
 
 	logsSvc := logsCollection.NewCollection(mongoDB, "logs")
 
-	url := "http://" + os.Getenv("BASE_IP") + ":9001"
-	logrus.Info("url: ", url)
+	url := os.Getenv("BASE_IP") + ":9002"
+
+	conn, err := grpc.NewClient(url, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Fatalf("Did not connect: %v", err)
+	}
+
+	defer conn.Close()
+	client := pb.NewTopicServiceClient(conn)
 
 	// check connection
-	_, resErr := http.Get(url)
+	_, resErr := client.GetTopics(ctx, &pb.GetRequest{})
 	if resErr != nil {
-		logrus.Info("resErr: ", resErr.Error())
+		logrus.Info("resErr: ", resErr)
 		return
 	}
 
-	loopTimeSec := 5
-	startTime := time.Now()
-	endTime := startTime.Add(time.Duration(loopTimeSec) * time.Second)
+	loopCount := 1000
 
 	count := 0
 	countSuccess := 0
 	countFail := 0
 	totalRequestTime := int64(0)
-	minTimeNanoSec := float64(1000000000)
+	minTimeNanoSec := float64(1000000)
 	maxTimeNanoSec := float64(0)
 
-	logrus.Info("loopTimeSec: ", loopTimeSec)
+	logrus.Info("loopCount: ", loopCount)
 	logrus.Info("start")
-	for time.Now().Before(endTime) {
+	startTime := time.Now()
+	for count < loopCount {
 		count++
 
 		timestamp := time.Now()
-		_, resErr := http.Get(url)
+		_, resErr := client.GetTopics(ctx, &pb.GetRequest{})
 		if resErr != nil {
-			logrus.Info("resErr: ", resErr)
 			countFail++
-			continue
 		}
 		requestDuration := time.Since(timestamp).Nanoseconds()
 
@@ -85,8 +80,9 @@ func main() {
 		totalRequestTime += requestDuration
 		countSuccess++
 	}
+	endTime := time.Since(startTime).Milliseconds()
 
-	logrus.Info("end of rest service")
+	logrus.Info("end of grpc service")
 	logrus.Info("count: ", count)
 	logrus.Info("countSuccess: ", countSuccess)
 	logrus.Info("countFail: ", countFail)
@@ -98,9 +94,9 @@ func main() {
 	logsSvc.InsertOne(ctx, logsCollection.LogsSchema{
 		ID:                    primitive.NewObjectID(),
 		CreatedTime:           time.Now(),
-		Type:                  logsCollection.REST,
+		Type:                  logsCollection.GRPC,
 		Connection:            logsCollection.LOCAL,
-		LoopTimeSec:           int64(loopTimeSec),
+		LoopTimeMilliSec:      endTime,
 		Count:                 int64(count),
 		CountSuccess:          int64(countSuccess),
 		CountFail:             int64(countFail),

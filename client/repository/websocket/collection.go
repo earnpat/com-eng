@@ -15,7 +15,7 @@ type collectionService struct {
 	collection *mongo.Collection
 }
 
-func NewCollection(client mongo.Database) ICollection {
+func NewCollection(client mongo.Database, connectionName string) ICollection {
 	mgCollection := client.Collection("websocket")
 	return &collectionService{
 		MongoSchemaHelperService: helper.MongoSchemaHelperService[helper.Schema]{

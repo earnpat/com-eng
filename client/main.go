@@ -28,9 +28,9 @@ func main() {
 	// dbmg, dbmgCtx := helper.MongoConnection("mongodb://localhost:27018/") // local
 	mongoDB := *dbmg.Database("com-eng")
 
-	restSvc := restCollection.NewCollection(mongoDB)
-	// grpcSvc := grpcCollection.NewCollection(mongoDB)
-	websocketSvc := websocketCollection.NewCollection(mongoDB)
+	restSvc := restCollection.NewCollection(mongoDB, "logs")
+	// grpcSvc := grpcCollection.NewCollection(mongoDB,"logs")
+	websocketSvc := websocketCollection.NewCollection(mongoDB, "logs")
 
 	conn, err := grpc.NewClient(
 		// "178.128.88.107:9002",

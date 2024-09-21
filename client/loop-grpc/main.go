@@ -26,9 +26,9 @@ func main() {
 	ctx := context.Background()
 
 	dbmg, dbmgCtx := helper.MongoConnection(os.Getenv("MONGO_URL"))
-	mongoDB := *dbmg.Database("com-eng-v3")
+	mongoDB := *dbmg.Database("com-eng")
 
-	logsSvc := logsCollection.NewCollection(mongoDB)
+	logsSvc := logsCollection.NewCollection(mongoDB, "logs")
 
 	url := os.Getenv("BASE_IP") + ":9002"
 

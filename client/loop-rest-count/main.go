@@ -37,7 +37,7 @@ func main() {
 	dbmg, dbmgCtx := helper.MongoConnection(os.Getenv("MONGO_URL"))
 	mongoDB := *dbmg.Database("com-eng")
 
-	logsSvc := logsCollection.NewCollection(mongoDB, "logs")
+	logsSvc := logsCollection.NewCollection(mongoDB, "logs-count")
 
 	url := "http://" + os.Getenv("BASE_IP") + ":9001"
 	logrus.Info("url: ", url)
@@ -49,9 +49,7 @@ func main() {
 		return
 	}
 
-	loopTimeSec := 5
-	startTime := time.Now()
-	endTime := startTime.Add(time.Duration(loopTimeSec) * time.Second)
+	loopCount := 1000
 
 	count := 0
 	countSuccess := 0
@@ -60,9 +58,10 @@ func main() {
 	minTimeNanoSec := float64(1000000000)
 	maxTimeNanoSec := float64(0)
 
-	logrus.Info("loopTimeSec: ", loopTimeSec)
+	logrus.Info("loopCount: ", loopCount)
 	logrus.Info("start")
-	for time.Now().Before(endTime) {
+	startTime := time.Now()
+	for count < loopCount {
 		count++
 
 		timestamp := time.Now()
@@ -85,8 +84,10 @@ func main() {
 		totalRequestTime += requestDuration
 		countSuccess++
 	}
+	endTime := time.Since(startTime).Milliseconds()
 
 	logrus.Info("end of rest service")
+	logrus.Info("endTime: ", endTime)
 	logrus.Info("count: ", count)
 	logrus.Info("countSuccess: ", countSuccess)
 	logrus.Info("countFail: ", countFail)
@@ -100,7 +101,7 @@ func main() {
 		CreatedTime:           time.Now(),
 		Type:                  logsCollection.REST,
 		Connection:            logsCollection.LOCAL,
-		LoopTimeSec:           int64(loopTimeSec),
+		LoopTimeMilliSec:      endTime,
 		Count:                 int64(count),
 		CountSuccess:          int64(countSuccess),
 		CountFail:             int64(countFail),
