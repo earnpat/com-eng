@@ -27,7 +27,7 @@ func main() {
 	dbmg, dbmgCtx := helper.MongoConnection(os.Getenv("MONGO_URL"))
 	mongoDB := *dbmg.Database("com-eng")
 
-	logsSvc := logsCollection.NewCollection(mongoDB, "logs")
+	logsSvc := logsCollection.NewCollection(mongoDB, "logs-count")
 
 	basePath := os.Getenv("BASE_IP") + ":9003"
 	logrus.Info("basePath: ", basePath)
@@ -51,7 +51,7 @@ func main() {
 		return
 	}
 
-	loopCount := 1000
+	loopCount := 10000
 
 	count := 0
 	countSuccess := 0
