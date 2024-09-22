@@ -2,7 +2,7 @@ package main
 
 import (
 	"client-server/helper"
-	logsCollection "client-server/repository/v3-logs"
+	logsCollection "client-server/repository/logs"
 	pb "client-server/services"
 	"context"
 	"log"
