@@ -13,7 +13,6 @@ import (
 
 type service struct {
 	pb.UnimplementedTopicServiceServer
-	Todo []*pb.TodoResponse `json:"todo"`
 }
 
 func (s *service) GetTopics(ctx context.Context, req *pb.GetRequest) (*pb.Response, error) {
