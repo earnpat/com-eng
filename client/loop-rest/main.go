@@ -19,13 +19,6 @@ type ResBody struct {
 	Timestamp int64 `json:"timestamp"`
 }
 
-type TodoData struct {
-	Id        int64  `json:"id"`
-	Todo      string `json:"todo"`
-	Completed bool   `json:"completed"`
-	UserId    int64  `json:"userId"`
-}
-
 func main() {
 	err := godotenv.Load()
 	if err != nil {

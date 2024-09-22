@@ -11,13 +11,6 @@ message GetRequest {
   int64 timestamp = 1;
 }
 
-message TodoResponse {
-  int64 id = 1;
-  string todo = 2;
-  bool completed = 3;
-  int64 userId = 4;
-}
-
 message Response {
   bool ok = 1;
 }
