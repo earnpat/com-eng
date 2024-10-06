@@ -1,0 +1,24 @@
+syntax = "proto3";
+package topic;
+
+option go_package = "services/pb";
+
+service TopicService {
+  rpc GetTopic(GetRequest) returns (Response);
+  rpc GetTopicResponse(GetRequest) returns (Response);
+}
+
+message GetRequest {
+}
+
+message TodoResponse {
+  int64 id = 1;
+  string todo = 2;
+  bool completed = 3;
+  int64 userId = 4;
+}
+
+message Response {
+  bool ok = 1;
+  repeated TodoResponse todo = 2;
+}
