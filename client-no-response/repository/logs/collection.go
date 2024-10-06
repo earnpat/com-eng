@@ -15,8 +15,8 @@ type collectionService struct {
 	collection *mongo.Collection
 }
 
-func NewCollection(client mongo.Database) ICollection {
-	mgCollection := client.Collection("logs")
+func NewCollection(client mongo.Database, connectionName string) ICollection {
+	mgCollection := client.Collection(connectionName)
 	return &collectionService{
 		MongoSchemaHelperService: helper.MongoSchemaHelperService[LogsSchema]{
 			Collection: mgCollection,
