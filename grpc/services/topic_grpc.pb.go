@@ -22,7 +22,8 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type TopicServiceClient interface {
-	GetTopics(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*Response, error)
+	GetTopic(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*Response, error)
+	GetTopicResponse(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*Response, error)
 }
 
 type topicServiceClient struct {
@@ -33,9 +34,18 @@ func NewTopicServiceClient(cc grpc.ClientConnInterface) TopicServiceClient {
 	return &topicServiceClient{cc}
 }
 
-func (c *topicServiceClient) GetTopics(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*Response, error) {
+func (c *topicServiceClient) GetTopic(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*Response, error) {
 	out := new(Response)
-	err := c.cc.Invoke(ctx, "/topic.TopicService/GetTopics", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/topic.TopicService/GetTopic", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *topicServiceClient) GetTopicResponse(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
+	err := c.cc.Invoke(ctx, "/topic.TopicService/GetTopicResponse", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +56,8 @@ func (c *topicServiceClient) GetTopics(ctx context.Context, in *GetRequest, opts
 // All implementations must embed UnimplementedTopicServiceServer
 // for forward compatibility
 type TopicServiceServer interface {
-	GetTopics(context.Context, *GetRequest) (*Response, error)
+	GetTopic(context.Context, *GetRequest) (*Response, error)
+	GetTopicResponse(context.Context, *GetRequest) (*Response, error)
 	mustEmbedUnimplementedTopicServiceServer()
 }
 
@@ -54,8 +65,11 @@ type TopicServiceServer interface {
 type UnimplementedTopicServiceServer struct {
 }
 
-func (UnimplementedTopicServiceServer) GetTopics(context.Context, *GetRequest) (*Response, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetTopics not implemented")
+func (UnimplementedTopicServiceServer) GetTopic(context.Context, *GetRequest) (*Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTopic not implemented")
+}
+func (UnimplementedTopicServiceServer) GetTopicResponse(context.Context, *GetRequest) (*Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTopicResponse not implemented")
 }
 func (UnimplementedTopicServiceServer) mustEmbedUnimplementedTopicServiceServer() {}
 
@@ -70,20 +84,38 @@ func RegisterTopicServiceServer(s grpc.ServiceRegistrar, srv TopicServiceServer)
 	s.RegisterService(&TopicService_ServiceDesc, srv)
 }
 
-func _TopicService_GetTopics_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _TopicService_GetTopic_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(TopicServiceServer).GetTopics(ctx, in)
+		return srv.(TopicServiceServer).GetTopic(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/topic.TopicService/GetTopics",
+		FullMethod: "/topic.TopicService/GetTopic",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TopicServiceServer).GetTopics(ctx, req.(*GetRequest))
+		return srv.(TopicServiceServer).GetTopic(ctx, req.(*GetRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TopicService_GetTopicResponse_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TopicServiceServer).GetTopicResponse(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/topic.TopicService/GetTopicResponse",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TopicServiceServer).GetTopicResponse(ctx, req.(*GetRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -96,8 +128,12 @@ var TopicService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*TopicServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "GetTopics",
-			Handler:    _TopicService_GetTopics_Handler,
+			MethodName: "GetTopic",
+			Handler:    _TopicService_GetTopic_Handler,
+		},
+		{
+			MethodName: "GetTopicResponse",
+			Handler:    _TopicService_GetTopicResponse_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -33,4 +33,5 @@ type LogsSchema struct {
 	AvgRequestTimeNanoSec int64              `json:"avgRequestTimeNanoSec"      bson:"avgRequestTimeNanoSec"`
 	AvgMilliSec           float64            `json:"avgMillisecond"             bson:"avgMillisecond"`
 	AvgMilliSecOneWay     float64            `json:"avgMillisecondOneWay"       bson:"avgMillisecondOneWay"`
+	ResponseSize          float64            `json:"responseSize,omitempty"     bson:"responseSize,omitempty"`
 }

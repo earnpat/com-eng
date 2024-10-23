@@ -15,10 +15,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type ResBody struct {
-	Timestamp int64 `json:"timestamp"`
-}
-
 func main() {
 	err := godotenv.Load()
 	if err != nil {

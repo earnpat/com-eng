@@ -4,6 +4,9 @@ import (
 	"client-server/helper"
 	logsCollection "client-server/repository/logs"
 	"context"
+	"encoding/json"
+	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -15,8 +18,11 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type ResBody struct {
-	Timestamp int64 `json:"timestamp"`
+type TodoData struct {
+	Id        int64  `json:"id"`
+	Todo      string `json:"todo"`
+	Completed bool   `json:"completed"`
+	UserId    int64  `json:"userId"`
 }
 
 func main() {
@@ -30,9 +36,9 @@ func main() {
 	dbmg, dbmgCtx := helper.MongoConnection(os.Getenv("MONGO_URL"))
 	mongoDB := *dbmg.Database("com-eng")
 
-	logsSvc := logsCollection.NewCollection(mongoDB, "logs-count")
+	logsSvc := logsCollection.NewCollection(mongoDB, "logs")
 
-	url := "http://" + os.Getenv("BASE_IP") + ":9001"
+	url := "http://" + os.Getenv("BASE_IP") + ":9001/response"
 	logrus.Info("url: ", url)
 
 	// check connection
@@ -42,29 +48,51 @@ func main() {
 		return
 	}
 
-	loopCount := 10000
+	loopTimeSec := 1
+	startTime := time.Now()
+	endTime := startTime.Add(time.Duration(loopTimeSec) * time.Second)
 
 	count := 0
 	countSuccess := 0
 	countFail := 0
 	totalRequestTime := int64(0)
+	totalResponseSize := 0
 	minTimeNanoSec := float64(1000000000)
 	maxTimeNanoSec := float64(0)
 
-	logrus.Info("loopCount: ", loopCount)
+	logrus.Info("loopTimeSec: ", loopTimeSec)
 	logrus.Info("start")
-	startTime := time.Now()
-	for count < loopCount {
+	for time.Now().Before(endTime) {
 		count++
 
 		timestamp := time.Now()
-		_, resErr := http.Get(url)
+		res, resErr := http.Get(url)
 		if resErr != nil {
-			logrus.Info("resErr: ", resErr)
 			countFail++
 			continue
 		}
 		requestDuration := time.Since(timestamp).Nanoseconds()
+
+		defer res.Body.Close()
+
+		body, err := io.ReadAll(res.Body)
+		if err != nil {
+			fmt.Println("Error reading body:", err)
+			return
+		}
+
+		responseSize := len(body)
+
+		var response struct {
+			Todo []TodoData `json:"todo"`
+		}
+		err = json.Unmarshal(body, &response)
+		if err != nil {
+			countFail++
+			continue
+		}
+
+		logrus.Info(len(response.Todo))
 
 		if float64(requestDuration) > (maxTimeNanoSec) {
 			maxTimeNanoSec = float64(requestDuration)
@@ -75,12 +103,11 @@ func main() {
 		}
 
 		totalRequestTime += requestDuration
+		totalResponseSize += responseSize
 		countSuccess++
 	}
-	endTime := time.Since(startTime).Milliseconds()
 
 	logrus.Info("end of rest service")
-	logrus.Info("endTime: ", endTime)
 	logrus.Info("count: ", count)
 	logrus.Info("countSuccess: ", countSuccess)
 	logrus.Info("countFail: ", countFail)
@@ -89,12 +116,14 @@ func main() {
 	millisecond := float64(avgRequestTimeNanoSec) / float64(1000000)
 	logrus.Info("millisecond: ", millisecond)
 
+	responseSize := totalResponseSize / count
+
 	logsSvc.InsertOne(ctx, logsCollection.LogsSchema{
 		ID:                    primitive.NewObjectID(),
 		CreatedTime:           time.Now(),
 		Type:                  logsCollection.REST,
 		Connection:            logsCollection.LOCAL,
-		LoopTimeMilliSec:      endTime,
+		LoopTimeSec:           int64(loopTimeSec),
 		Count:                 int64(count),
 		CountSuccess:          int64(countSuccess),
 		CountFail:             int64(countFail),
@@ -103,6 +132,7 @@ func main() {
 		AvgRequestTimeNanoSec: avgRequestTimeNanoSec,
 		AvgMilliSec:           millisecond,
 		AvgMilliSecOneWay:     millisecond / float64(2),
+		ResponseSize:          float64(responseSize),
 	}, *options.InsertOne())
 
 	defer func() {

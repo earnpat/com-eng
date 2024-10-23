@@ -3,17 +3,19 @@ package main
 import (
 	"client-server/helper"
 	logsCollection "client-server/repository/logs"
+	pb "client-server/services"
 	"context"
 	"log"
-	"net/url"
 	"os"
 	"time"
 
-	"github.com/gorilla/websocket"
 	"github.com/joho/godotenv"
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/protobuf/proto"
 )
 
 func main() {
@@ -29,29 +31,24 @@ func main() {
 
 	logsSvc := logsCollection.NewCollection(mongoDB, "logs")
 
-	basePath := os.Getenv("BASE_IP") + ":9003"
-	logrus.Info("basePath: ", basePath)
+	url := os.Getenv("BASE_IP") + ":9002"
 
-	u := url.URL{Scheme: "ws", Host: basePath, Path: "/ws/test"}
-
-	conn, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
+	conn, err := grpc.NewClient(url, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		log.Fatalf("dial: %v", err)
+		log.Fatalf("Did not connect: %v", err)
 	}
+
 	defer conn.Close()
+	client := pb.NewTopicServiceClient(conn)
 
 	// check connection
-	err = conn.WriteMessage(websocket.TextMessage, nil)
-	if err != nil {
+	_, resErr := client.GetTopicResponse(ctx, &pb.GetRequest{})
+	if resErr != nil {
+		logrus.Info("resErr: ", resErr)
 		return
 	}
 
-	_, _, err = conn.ReadMessage()
-	if err != nil {
-		return
-	}
-
-	loopTimeSec := 5
+	loopTimeSec := 1
 	startTime := time.Now()
 	endTime := startTime.Add(time.Duration(loopTimeSec) * time.Second)
 
@@ -59,6 +56,7 @@ func main() {
 	countSuccess := 0
 	countFail := 0
 	totalRequestTime := int64(0)
+	totalResponseSize := 0
 	minTimeNanoSec := float64(1000000)
 	maxTimeNanoSec := float64(0)
 
@@ -68,18 +66,18 @@ func main() {
 		count++
 
 		timestamp := time.Now()
-		err = conn.WriteMessage(websocket.TextMessage, nil)
-		if err != nil {
+		res, resErr := client.GetTopicResponse(ctx, &pb.GetRequest{})
+		if resErr != nil {
+			countFail++
+		}
+		requestDuration := time.Since(timestamp).Nanoseconds()
+
+		if res.Todo == nil {
 			countFail++
 			continue
 		}
 
-		_, _, err := conn.ReadMessage()
-		if err != nil {
-			countFail++
-			continue
-		}
-		requestDuration := time.Since(timestamp).Nanoseconds()
+		logrus.Info(len(res.Todo))
 
 		if float64(requestDuration) > (maxTimeNanoSec) {
 			maxTimeNanoSec = float64(requestDuration)
@@ -90,10 +88,11 @@ func main() {
 		}
 
 		totalRequestTime += requestDuration
+		totalResponseSize += proto.Size(res)
 		countSuccess++
 	}
 
-	logrus.Info("end of websocket service")
+	logrus.Info("end of grpc service")
 	logrus.Info("count: ", count)
 	logrus.Info("countSuccess: ", countSuccess)
 	logrus.Info("countFail: ", countFail)
@@ -102,10 +101,12 @@ func main() {
 	millisecond := float64(avgRequestTimeNanoSec) / float64(1000000)
 	logrus.Info("millisecond: ", millisecond)
 
+	responseSize := totalResponseSize / count
+
 	logsSvc.InsertOne(ctx, logsCollection.LogsSchema{
 		ID:                    primitive.NewObjectID(),
 		CreatedTime:           time.Now(),
-		Type:                  logsCollection.WS,
+		Type:                  logsCollection.GRPC,
 		Connection:            logsCollection.LOCAL,
 		LoopTimeSec:           int64(loopTimeSec),
 		Count:                 int64(count),
@@ -116,6 +117,7 @@ func main() {
 		AvgRequestTimeNanoSec: avgRequestTimeNanoSec,
 		AvgMilliSec:           millisecond,
 		AvgMilliSecOneWay:     millisecond / float64(2),
+		ResponseSize:          float64(responseSize),
 	}, *options.InsertOne())
 
 	defer func() {
