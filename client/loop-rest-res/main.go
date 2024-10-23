@@ -48,7 +48,7 @@ func main() {
 		return
 	}
 
-	loopTimeSec := 1
+	loopTimeSec := 60
 	startTime := time.Now()
 	endTime := startTime.Add(time.Duration(loopTimeSec) * time.Second)
 
@@ -91,8 +91,6 @@ func main() {
 			countFail++
 			continue
 		}
-
-		logrus.Info(len(response.Todo))
 
 		if float64(requestDuration) > (maxTimeNanoSec) {
 			maxTimeNanoSec = float64(requestDuration)
