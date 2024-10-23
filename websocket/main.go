@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"log"
+	"os"
 
 	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
@@ -31,6 +33,30 @@ func main() {
 			}
 
 			if err = c.WriteMessage(websocket.TextMessage, nil); err != nil {
+				log.Println("write:", err)
+			}
+		}
+	}))
+
+	app.Get("/ws/response", websocket.New(func(c *websocket.Conn) {
+		for {
+			_, _, err := c.ReadMessage()
+			if err != nil {
+				if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+					log.Println("read:", err)
+				}
+				break
+			}
+
+			jsonFile, err := os.Open("../todo.json")
+			if err != nil {
+				fmt.Println(err)
+			}
+			defer jsonFile.Close()
+
+			jsonData, _ := io.ReadAll(jsonFile)
+
+			if err = c.WriteMessage(websocket.BinaryMessage, jsonData); err != nil {
 				log.Println("write:", err)
 			}
 		}
