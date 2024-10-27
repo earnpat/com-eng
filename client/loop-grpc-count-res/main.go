@@ -48,7 +48,7 @@ func main() {
 		return
 	}
 
-	loopCount := 10000
+	loopCount := 30000
 
 	count := 0
 	countSuccess := 0
