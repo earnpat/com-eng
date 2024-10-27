@@ -4,6 +4,7 @@ import (
 	"client-server/helper"
 	logsCollection "client-server/repository/logs"
 	"context"
+	"encoding/json"
 	"io"
 	"log"
 	"net/http"
@@ -15,6 +16,13 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
+
+type TodoData struct {
+	Id        int64  `json:"id"`
+	Todo      string `json:"todo"`
+	Completed bool   `json:"completed"`
+	UserId    int64  `json:"userId"`
+}
 
 func main() {
 	err := godotenv.Load()
@@ -39,7 +47,7 @@ func main() {
 		return
 	}
 
-	loopCount := 10000
+	loopCount := 3000
 
 	count := 0
 	countSuccess := 0
@@ -73,6 +81,15 @@ func main() {
 		}
 
 		responseSize := len(body)
+
+		var response struct {
+			Todo []TodoData `json:"todo"`
+		}
+		err = json.Unmarshal(body, &response)
+		if err != nil {
+			countFail++
+			continue
+		}
 
 		if float64(requestDuration) > (maxTimeNanoSec) {
 			maxTimeNanoSec = float64(requestDuration)
