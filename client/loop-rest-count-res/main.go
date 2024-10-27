@@ -4,7 +4,6 @@ import (
 	"client-server/helper"
 	logsCollection "client-server/repository/logs"
 	"context"
-	"encoding/json"
 	"io"
 	"log"
 	"net/http"
@@ -17,13 +16,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type TodoData struct {
-	Id        int64  `json:"id"`
-	Todo      string `json:"todo"`
-	Completed bool   `json:"completed"`
-	UserId    int64  `json:"userId"`
-}
-
 func main() {
 	err := godotenv.Load()
 	if err != nil {
@@ -35,7 +27,7 @@ func main() {
 	dbmg, dbmgCtx := helper.MongoConnection(os.Getenv("MONGO_URL"))
 	mongoDB := *dbmg.Database("com-eng")
 
-	logsSvc := logsCollection.NewCollection(mongoDB, "logs")
+	logsSvc := logsCollection.NewCollection(mongoDB, "logs-count")
 
 	url := "http://" + os.Getenv("BASE_IP") + ":9001/response"
 	logrus.Info("url: ", url)
@@ -47,9 +39,7 @@ func main() {
 		return
 	}
 
-	loopTimeSec := 60
-	startTime := time.Now()
-	endTime := startTime.Add(time.Duration(loopTimeSec) * time.Second)
+	loopCount := 10000
 
 	count := 0
 	countSuccess := 0
@@ -59,14 +49,16 @@ func main() {
 	minTimeNanoSec := float64(1000000000)
 	maxTimeNanoSec := float64(0)
 
-	logrus.Info("loopTimeSec: ", loopTimeSec)
+	logrus.Info("loopCount: ", loopCount)
 	logrus.Info("start")
-	for time.Now().Before(endTime) {
+	startTime := time.Now()
+	for count < loopCount {
 		count++
 
 		timestamp := time.Now()
 		res, resErr := http.Get(url)
 		if resErr != nil {
+			logrus.Info("resErr: ", resErr)
 			countFail++
 			continue
 		}
@@ -82,15 +74,6 @@ func main() {
 
 		responseSize := len(body)
 
-		var response struct {
-			Todo []TodoData `json:"todo"`
-		}
-		err = json.Unmarshal(body, &response)
-		if err != nil {
-			countFail++
-			continue
-		}
-
 		if float64(requestDuration) > (maxTimeNanoSec) {
 			maxTimeNanoSec = float64(requestDuration)
 		}
@@ -103,8 +86,10 @@ func main() {
 		totalResponseSize += responseSize
 		countSuccess++
 	}
+	endTime := time.Since(startTime).Milliseconds()
 
 	logrus.Info("end of rest service")
+	logrus.Info("endTime: ", endTime)
 	logrus.Info("count: ", count)
 	logrus.Info("countSuccess: ", countSuccess)
 	logrus.Info("countFail: ", countFail)
@@ -120,7 +105,7 @@ func main() {
 		CreatedTime:           time.Now(),
 		Type:                  logsCollection.REST,
 		Connection:            logsCollection.LOCAL,
-		LoopTimeSec:           int64(loopTimeSec),
+		LoopTimeMilliSec:      endTime,
 		Count:                 int64(count),
 		CountSuccess:          int64(countSuccess),
 		CountFail:             int64(countFail),
